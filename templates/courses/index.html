@@ -8,10 +8,12 @@
         <ul class="list-group">
         {% for course in courses %}
             <li class="list-group-item">
-                <div class="row">
-                    <div class="col-10">{{ course.course_name }}</div>
-                    <div class="col-2 text-secondary text-right">seats: {{ course.seats_count }}</div>
-                </div>
+                <a href="{% url 'detail' course.id %}">
+                    <div class="row">
+                        <div class="col-10">{{ course.course_name }}</div>
+                        <div class="col-2 text-secondary text-right">seats: {{ course.seats_count }}</div>
+                    </div>
+                </a>
             </li>
         {% endfor %}
         </ul>
