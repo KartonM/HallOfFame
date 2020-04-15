@@ -27,7 +27,7 @@ class Teacher(models.Model):
     academic_degree = models.CharField(max_length=32)
 
     def __str__(self):
-        return self.user.get_full_name()
+        return f'{self.academic_degree} {self.user.get_full_name()}'
 
 
 class Course(models.Model):
@@ -49,13 +49,16 @@ class Group(models.Model):
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.group_tag
+        return f'{self.course} {self.group_tag}'
 
 
 class CourseParticipation(models.Model):
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     final_grade = models.CharField(max_length=3, choices=GRADES, null=True)
+
+    def __str__(self):
+        return f'{self.student} assigned to {self.group}'
 
 
 class Event(models.Model):

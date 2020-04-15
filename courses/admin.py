@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 # Register your models here.
-from courses.models import Course, Group
+from courses.models import Course, Group, Teacher, Student, CourseParticipation
 
 
 class GroupInline(admin.StackedInline):
@@ -14,3 +14,6 @@ class CourseAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Course, CourseAdmin)
+admin.site.register(Teacher)
+admin.site.register(Student)
+admin.site.register(CourseParticipation)
