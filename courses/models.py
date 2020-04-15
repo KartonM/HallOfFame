@@ -33,7 +33,7 @@ class Teacher(models.Model):
 class Course(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
-    admissible_absences = models.PositiveSmallIntegerField(null=True)
+    tutor = models.ForeignKey(Teacher, on_delete=models.CASCADE)
 
     def seats_count(self):
         return self.group_set.aggregate(Sum('size'))['size__sum']
@@ -46,6 +46,7 @@ class Group(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     group_tag = models.CharField(max_length=15)
     size = models.PositiveSmallIntegerField()
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.group_tag
@@ -72,13 +73,9 @@ class Event(models.Model):
         return f'{self.name}, {self.date}'
 
 
-class Presence(models.Model):
+class Grade(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
-
-
-class Grade(models.Model):
-    presence = models.OneToOneField(Presence, on_delete=models.CASCADE, primary_key=True)
     value = models.CharField(max_length=3, choices=GRADES, null=True)
     date_of_registration = models.DateTimeField()
 
