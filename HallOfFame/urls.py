@@ -17,6 +17,27 @@ from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
-    path('courses/', include('courses.urls')),
     path('admin/', admin.site.urls),
+
+    # authentication
+    path('register/', include('courses.urls')),
+    path('login/', include('courses.urls')),
+
+    # general viewing of details
+    path('courses/', include('courses.urls')),  # list of courses
+    path('courses/<int:course_id>', include('courses.urls')),  # list of groups in course with possibility to join (students only), view, search, create (teachers only)
+    path('courses/<int:course_id>/<int:group_id>', include('courses.urls')),  # group details
+    path('courses/<int:course_id>/<int:group_id>/<int:event_id>', include('courses.urls')),  # event details for group participants only
+    path('courses/<int:course_id>/<int:group_id>/grades', include('courses.urls')),  # table of grades
+    path('courses/<int:course_id>/<int:group_id>/events', include('courses.urls')),  # events divided for past and upcomming
+    path('courses/myGrades', include('courses.urls')),  # list of grades from all courses (students only)
+
+    # marking (for teachers only)
+    path('courses/<int:course_id>/<int:group_id>/<int:event_id>/addGrades', include('courses.urls')),  # adding grades for event
+
+    # creating (for teachers only)
+    path('courses/createCourse', include('courses.urls')),  # create course form
+    path('courses/<int:course_id>/createGroup', include('courses.urls')),  # create group form
+    path('courses/<int:course_id>/<int:group_id>/createEvent', include('courses.urls')),  # create event in group form
+
 ]
