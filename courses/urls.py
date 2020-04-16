@@ -15,5 +15,7 @@ urlpatterns = [
     path('createCourse', views.blank, name='blank'),
     path('<int:course_id>/createGroup', views.blank, name='blank'),
     path('<int:course_id>/<int:group_id>/createEvent', views.blank, name='blank'),
+    path('myGrades', views.blank, name='blank'),
+
 ]
 

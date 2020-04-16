@@ -30,6 +30,7 @@ urlpatterns = [
     path('courses/<int:course_id>/<int:group_id>/<int:event_id>', include('courses.urls')),  # event details for group participants only
     path('courses/<int:course_id>/<int:group_id>/grades', include('courses.urls')),  # table of grades
     path('courses/<int:course_id>/<int:group_id>/events', include('courses.urls')),  # events divided for past and upcomming
+    path('courses/myGrades', include('courses.urls')),  # list of grades from all courses (students only)
 
     # marking (for teachers only)
     path('courses/<int:course_id>/<int:group_id>/<int:event_id>/addGrades', include('courses.urls')),  # adding grades for event
