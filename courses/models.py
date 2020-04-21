@@ -49,7 +49,7 @@ class Group(models.Model):
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f'{self.course} {self.group_tag}'
+        return f'{self.teacher}, {self.group_tag}'
 
 
 class CourseParticipation(models.Model):
