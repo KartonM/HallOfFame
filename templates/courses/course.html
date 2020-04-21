@@ -11,11 +11,11 @@
 
     <h5>Groups:</h5>
     <ul class="list-group">
-        {% for group in course.group_set.all %}
+    {% for group in course.group_set.all %}
         <li class="list-group-item">
             <a href="/courses/group/{{ group.id }}" class="text-decoration-none text-dark">{{ group }}</a>
         </li>
-        {% endfor %}
+    {% endfor %}
         <li class="list-group-item">
             <a href="/courses/{{ course.id }}/createGroup" class="btn btn-primary">Create group</a>
         </li>

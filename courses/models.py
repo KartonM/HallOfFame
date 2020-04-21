@@ -67,13 +67,13 @@ class Event(models.Model):
     is_required_to_pass_the_course = models.BooleanField()
     min_tasks_positive = models.PositiveSmallIntegerField(default=0)
     weight = models.PositiveSmallIntegerField()
-    group = models.ForeignKey(Group, on_delete=models.CASCADE, default=None)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE)
 
     def max_points(self):
         return self.task_set.aggregate(Sum('max_points'))['max_points__sum']
 
     def __str__(self):
-        return f'{self.name}, {self.date}'
+        return f'{self.name}, {self.date.date()}'
 
 
 class Grade(models.Model):

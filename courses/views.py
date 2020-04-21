@@ -1,9 +1,12 @@
+from datetime import datetime
+
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
 
 # Create your views here.
-from courses.models import Course, Teacher, Group
-from courses.forms import CreateCourseForm, CreateGroupForm
+from courses.models import Course, Teacher, Group, Event, Task
+from courses.forms import CreateCourseForm, CreateGroupForm, CreateEventForm, CreateTaskForm
+from django.forms import formset_factory
 
 
 def index(request):
@@ -57,3 +60,45 @@ def create_group(request, course_id):
 def group(request, group_id):
     group = Group.objects.get(id=group_id)
     return render(request, 'courses/group.html', {'group': group})
+
+
+def create_event(request, group_id):
+    if request.method == 'POST':
+        form = CreateEventForm(request.POST)
+        if form.is_valid():
+            event = Event.objects.create(
+                name=form.cleaned_data['name'],
+                date=form.cleaned_data['date'],
+                is_required_to_pass_the_course=form.cleaned_data['is_required_to_pass_the_course'],
+                min_tasks_positive=form.cleaned_data['min_tasks_positive'],
+                weight=form.cleaned_data['weight'],
+                group_id=group_id
+            )
+            tasks_count = form.cleaned_data['tasks_count']
+            if tasks_count > 0:
+                return HttpResponseRedirect(f'/courses/createTasks/{event.id}/{tasks_count}')
+            else:
+                return HttpResponseRedirect(f'/courses/group/{group_id}')
+    else:
+        form = CreateEventForm()
+
+    return render(request, 'courses/create_event.html', {'form': form})
+
+
+def create_event_tasks(request, event_id, tasks_count):
+    TasksFormSet = formset_factory(CreateTaskForm, extra=tasks_count)
+
+    if request.method == 'POST':
+        formset = TasksFormSet(request.POST)
+        if formset.is_valid():
+            for form in formset:
+                Task.objects.create(
+                    event_id=event_id,
+                    name=form.cleaned_data['name'],
+                    max_points=form.cleaned_data['max_points']
+                )
+            return HttpResponseRedirect(f'/courses/group/{Event.objects.get(id=event_id).group.id}')
+    else:
+        formset = TasksFormSet()
+
+    return render(request, 'courses/create_tasks.html', {'formset': formset})

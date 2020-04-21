@@ -14,7 +14,8 @@ urlpatterns = [
     path('<int:course_id>/<int:group_id>/<int:event_id>/addGrades', views.blank, name='blank'),
     path('createCourse', views.create_course, name='create_course'),
     path('<int:course_id>/createGroup', views.create_group, name='create_group'),
-    path('<int:course_id>/<int:group_id>/createEvent', views.blank, name='blank'),
+    path('group/<int:group_id>/createEvent', views.create_event, name='create_event'),
+    path('createTasks/<int:event_id>/<int:tasks_count>', views.create_event_tasks, name='create_tasks'),
     path('myGrades', views.blank, name='blank'),
 
 ]
