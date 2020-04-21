@@ -23,7 +23,7 @@ def create_course(request):
             course = Course.objects.create(
                 name=form.cleaned_data['name'],
                 description=form.cleaned_data['description'],
-                tutor=Teacher.objects.first()
+                tutor=Teacher.objects.first()  # TODO use id of logged in teacher instead
             )
             return HttpResponseRedirect(f'{course.id}')
     else:
@@ -36,11 +36,12 @@ def course(request, course_id):
     course = Course.objects.get(id=course_id)
     return render(request, 'courses/course.html', {'course': course})
 
+
 def create_group(request, course_id):
     if request.method == 'POST':
         form = CreateGroupForm(request.POST)
         if form.is_valid():
-            group = Group.objects.create(
+            Group.objects.create(
                 group_tag=form.cleaned_data['tag'],
                 size=form.cleaned_data['size'],
                 course_id=course_id,
@@ -51,3 +52,8 @@ def create_group(request, course_id):
         form = CreateGroupForm()
 
     return render(request, 'courses/create_group.html', {'form': form})
+
+
+def group(request, group_id):
+    group = Group.objects.get(id=group_id)
+    return render(request, 'courses/group.html', {'group': group})

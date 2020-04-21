@@ -1,0 +1,37 @@
+{% extends 'courses/layout.html' %}
+{% load widget_tweaks %}
+{% block content %}
+    <h2>{{ group }}</h2>
+
+    <h5>Teacher:</h5>
+    <p>{{ group.teacher }}</p>
+
+    <h5>Seats taken:</h5>
+    <p>{{ group.courseparticipation_set.count }}/{{ group.size }}</p>
+
+    <h5>Events:</h5>
+    {% if group.eve.count > 0 %}
+        <ul>
+        {% for course_participation in group.courseparticipation_set.all %}
+            <li>
+                {{ course_participation.student }}
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>Group has no events</p>
+    {% endif %}
+
+    <h5>Members:</h5>
+    {% if group.courseparticipation_set.count > 0 %}
+        <ul>
+        {% for course_participation in group.courseparticipation_set.all %}
+            <li>
+                {{ course_participation.student }}
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>Group has no members</p>
+    {% endif %}
+{% endblock %}
