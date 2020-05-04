@@ -1,8 +1,14 @@
 from django.urls import path
 from . import views
+from django.conf.urls import url
+
 
 urlpatterns = [
     path('', views.index, name='index'),
+
+    path('accounts/', views.signup, name='signup'),
+    path('accounts/signup', views.signup, name='signup'),
+
 
     path('register/', views.blank, name='blank'),
     path('login/', views.blank, name='blank'),
