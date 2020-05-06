@@ -6,9 +6,9 @@ from django.conf.urls import url
 urlpatterns = [
     path('', views.index, name='index'),
 
-    path('accounts/', views.signup, name='signup'),
-    path('accounts/signup', views.signup, name='signup'),
-
+    path('accounts/signupStudent', views.signup_student, name='signup'),
+    path('accounts/signupTeacher', views.signup_teacher, name='signup'),
+    path('accounts/', views.pick_register, name='register_pick'),
 
     path('register/', views.blank, name='blank'),
     path('login/', views.blank, name='blank'),
