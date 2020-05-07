@@ -51,7 +51,7 @@ def create_group(request, course_id):
         form = CreateGroupForm(request.POST)
         if form.is_valid():
             Group.objects.create(
-                group_tag=form.cleaned_data['tag'],
+                tag=form.cleaned_data['tag'],
                 size=form.cleaned_data['size'],
                 course_id=course_id,
                 teacher=form.cleaned_data['teacher']
