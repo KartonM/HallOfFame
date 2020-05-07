@@ -1,0 +1,23 @@
+{% extends 'courses/layout.html' %}
+{% load widget_tweaks %}
+{% block content %}
+    <h2>{{ course.name }}</h2>
+
+    <h5>Tutor:</h5>
+    <p>{{ course.tutor }}</p>
+
+    <h5>Course description:</h5>
+    <p>{{ course.description }}</p>
+
+    <h5>Groups:</h5>
+    <ul class="list-group">
+    {% for group in course.group_set.all %}
+        <li class="list-group-item">
+            <a href="/courses/group/{{ group.id }}" class="text-decoration-none text-dark">{{ group }}</a>
+        </li>
+    {% endfor %}
+        <li class="list-group-item">
+            <a href="/courses/{{ course.id }}/createGroup" class="btn btn-primary">Create group</a>
+        </li>
+    </ul>
+{% endblock %}

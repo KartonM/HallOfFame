@@ -1,0 +1,42 @@
+{% extends 'courses/layout.html' %}
+{% load widget_tweaks %}
+{% block content %}
+    <h2>Create new event</h2>
+    <form method="POST">{% csrf_token %}
+        <div class="form-group">
+            {{ form.name.errors }}
+            <label for="{{ form.name.id_for_label }}">Event name:</label>
+            {{ form.name|add_class:"form-control" }}
+        </div>
+        <div class="form-group">
+            {{ form.date.errors }}
+            <label for="{{ form.date.id_for_label }}">Date:</label>
+            {{ form.date }}
+        </div>
+        <div class="form-group">
+            {{ form.tasks_count.errors }}
+            <label for="{{ form.tasks_count.id_for_label }}">Number of tasks:</label>
+            {{ form.tasks_count|add_class:"form-control" }}
+        </div>
+        <div class="form-group">
+            {{ form.min_tasks_positive.errors }}
+            <label for="{{ form.min_tasks_positive.id_for_label }}">minimum positive tasks for positive grade</label>
+            {{ form.min_tasks_positive|add_class:"form-control" }}
+        </div>
+        <div class="form-group">
+            {{ form.weight.errors }}
+            <label for="{{ form.weight.id_for_label }}">Graded weight:</label>
+            {{ form.weight|add_class:"form-control" }}
+        </div>
+        <div class="form-group">
+            {{ form.is_required_to_pass_the_course.errors }}
+            <div class="form-check">
+                {{ form.is_required_to_pass_the_course|add_class:"form-check-input" }}
+                <label class="form-check-label" for="{{ form.tasks_count.id_for_label }}">positive grade is required to pass the course</label>
+          </div>
+        </div>
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+    </form>
+{% endblock %}

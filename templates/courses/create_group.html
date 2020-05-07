@@ -1,0 +1,25 @@
+{% extends 'courses/layout.html' %}
+{% load widget_tweaks %}
+{% block content %}
+    <h2>Create new group</h2>
+    <form method="POST">{% csrf_token %}
+        <div class="form-group">
+            {{ form.tag.errors }}
+            <label for="{{ form.tag.id_for_label }}">Group tag:</label>
+            {{ form.tag|add_class:"form-control" }}
+        </div>
+        <div class="form-group">
+            {{ form.size.errors }}
+            <label for="{{ form.size.id_for_label }}">Size:</label>
+            {{ form.size|add_class:"form-control" }}
+        </div>
+        <div class="form-group">
+            {{ form.teacher.errors }}
+            <label for="{{ form.teacher.id_for_label }}">Size:</label>
+            {{ form.teacher|add_class:"form-control" }}
+        </div>
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+    </form>
+{% endblock %}
