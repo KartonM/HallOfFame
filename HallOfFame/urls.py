@@ -20,8 +20,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 
     # authentication
-    path('register/', include('courses.urls')),
-    path('login/', include('courses.urls')),
+    path('accounts/', include('django.contrib.auth.urls')),
+    path('', include('courses.urls')),
 
     # general viewing of details
     path('courses/', include('courses.urls')),  # list of courses

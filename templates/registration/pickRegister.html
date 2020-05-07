@@ -1,0 +1,28 @@
+{% extends '../courses/layout.html' %}
+{% block content %}
+
+  {% if next %}
+    {% if user.is_authenticated %}
+      <p>Your account doesn't have access to this page. To proceed,
+      please login with an account that has access.</p>
+    {% else %}
+      <p>Please login to see this page.</p>
+    {% endif %}
+  {% endif %}
+  <div class="container">
+    <div class="jumbotron">
+        <a href="/accounts/login">
+            <h1>Sign in!</h1>
+        </a>
+
+        <h2>No account? Sign up!</h2>
+        <h5>Firstly pick one:</h5>
+          <a href="/accounts/signupStudent">
+              <div class="col-10">Sign up as STUDENT</div>
+          </a>
+          <a href="/accounts/signupTeacher">
+              <div class="col-10">Sign up as TEACHER</div>
+          </a>
+</div>
+  </div>
+{% endblock %}

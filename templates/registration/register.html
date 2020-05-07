@@ -1,0 +1,30 @@
+{% extends "../courses/layout.html" %}
+{% block content %}
+  <div class="container">
+    <div class="jumbotron">
+      {% if registered or user.is_authenticated %}
+        <h1>Thank you for registering!</h1>
+      {% else %}
+        <h1>Register Here</h1>
+        <h3>Just fill out the form.</h3>
+  <form method="post">
+    {% csrf_token %}
+    {% for field in form %}
+      <p>
+        {{ field.label_tag }}<br>
+        {{ field }}
+        {% if field.help_text %}
+          <small style="color: grey">{{ field.help_text }}</small>
+        {% endif %}
+        {% for error in field.errors %}
+          <p style="color: red">{{ error }}</p>
+        {% endfor %}
+      </p>
+    {% endfor %}
+    <button type="submit">Sign up</button>
+  </form>
+
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends '../courses/layout.html' %}
+{% block content %}
+     {% if form.errors %}
+    <p>Your username and password didn't match. Please try again.</p>
+  {% endif %}
+
+  {% if next %}
+    {% if user.is_authenticated %}
+      <p>Your account doesn't have access to this page. To proceed,
+      please login with an account that has access.</p>
+    {% else %}
+      <p>Please login to see this page.</p>
+    {% endif %}
+  {% endif %}
+  <div class="container">
+    <div class="jumbotron">
+        <h1>Login here :</h1>
+        <form method="post" action="{% url 'login' %}">
+            {% csrf_token %}
+            <label for="username">Username:</label>
+            <input type="text" name="username" placeholder="Username">
+            <label for="password">Password:</label>
+            <input type="password" name="password" placeholder="Password">
+            <input type="submit" name="" value="Login">
+        </form>
+</div>
+  </div>
+{% endblock %}
