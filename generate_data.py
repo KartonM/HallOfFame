@@ -63,7 +63,7 @@ def generate_groups_for_course(course, teachers):
         teacher = random.choice(teachers)
         groups.append(Group.objects.create(
             course=course,
-            group_tag=random.choice(week_days) + random.choice(lesson_start_times),
+            tag=random.choice(week_days) + random.choice(lesson_start_times),
             size=random.randint(MIN_GROUP_SIZE, MAX_GROUP_SIZE),
             teacher=teacher
         ))
