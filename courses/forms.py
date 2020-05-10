@@ -78,3 +78,7 @@ class PickStudentForm(forms.Form):
             self.fields['student'].queryset = students_choice_set
         else:
             super(PickStudentForm, self).__init__(*args, **kwargs)
+
+
+class FileUploadForm(forms.Form):
+    file = forms.FileField()

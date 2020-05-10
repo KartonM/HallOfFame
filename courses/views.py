@@ -1,17 +1,16 @@
+import csv
+import os
 from datetime import datetime
 
-from django.shortcuts import render
-from django.http import HttpResponse, HttpResponseRedirect
-from django.http import HttpResponse
 from django.contrib.auth import login, authenticate
-from django.contrib.auth.forms import UserCreationForm
-from django.shortcuts import render, redirect
-from courses.forms import SignUpStudentForm, SignUpTeacherForm, RegisterTaskPointsForm, PickStudentForm
-
-# Create your views here.
-from courses.models import Course, Teacher, Group, Event, Task, Student, Grade, TaskPoints
-from courses.forms import CreateCourseForm, CreateGroupForm, CreateEventForm, CreateTaskForm
 from django.forms import formset_factory
+from django.http import HttpResponseRedirect
+from django.shortcuts import render, redirect
+
+from courses.forms import CreateCourseForm, CreateGroupForm, CreateEventForm, CreateTaskForm
+from courses.forms import SignUpStudentForm, SignUpTeacherForm, RegisterTaskPointsForm, PickStudentForm, FileUploadForm
+from courses.models import Course, Teacher, Group, Event, Task, Student, Grade, TaskPoints
+# Create your views here.
 
 
 def index(request):
@@ -64,7 +63,7 @@ def create_group(request, course_id):
 
 def group(request, group_id):
     group = Group.objects.get(id=group_id)
-    return render(request, 'courses/group.html', {'group': group})
+    return render(request, 'courses/group.html', {'group': group, 'file_upload_form': FileUploadForm()})
 
 
 def create_event(request, group_id):
@@ -112,6 +111,7 @@ def create_event_tasks(request, event_id, tasks_count):
 def add_grades(request, event_id):
     event = Event.objects.get(id=event_id)
     tasks_count = Task.objects.filter(event=event).count()
+    task_names = []
     TaskPointsFormSet = formset_factory(RegisterTaskPointsForm, extra=tasks_count)
 
     if request.method == 'POST':
@@ -128,7 +128,7 @@ def add_grades(request, event_id):
                 TaskPoints.objects.create(
                     grade=grade,
                     task=task,
-                    points=max(points_form.cleaned_data['points'], task.max_points)
+                    points=min(points_form.cleaned_data['points'], task.max_points)
                 )
             return HttpResponseRedirect(f'/courses/group/{event.group.id}')
     else:
@@ -144,6 +144,97 @@ def add_grades(request, event_id):
         'courses/add_grades.html',
         {'points_formset': formset, 'student_form': form, 'task_names': task_names}
     )
+
+
+def upload_grades(request, event_id):
+    if request.method == 'POST':
+        form = FileUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            file_path = f'courses/tmp/{event_id}_{datetime.timestamp(datetime.now())}.csv'
+            grades, errors = save_grades_file(request.FILES['file'], file_path, event_id)
+            return render(
+                request,
+                'courses/uploaded_grades_preview.html',
+                {
+                    'grades': grades,
+                    'errors': errors,
+                    'task_names': Task.objects.filter(event_id=event_id).values_list('name', flat=True),
+                    'event_id': event_id,
+                    'csv_file_path': file_path
+                }
+            )
+
+    return HttpResponseRedirect(f'/courses/group/{Event.objects.get(id=event_id).group_id}')
+
+
+def save_grades_file(file, file_path, event_id):
+    with open(file_path, 'wb+') as destination:
+        for chunk in file.chunks():
+            destination.write(chunk)
+
+    return parse_grades_file(file_path, event_id)
+
+
+def parse_grades_file(file_path, event_id):
+    grades = []
+    errors = []
+    event = Event.objects.get(id=event_id)
+    tasks = Task.objects.filter(event=event)
+    with open(file_path) as csv_file:
+        csv_reader = csv.reader(csv_file, delimiter=',')
+        for row in csv_reader:
+            if len(row) < len(tasks) + 1:
+                errors.append(f'Following row doesn\'t have enough columns: {row}')
+                continue
+            student_name_or_card_id = row[0]
+            student = Student.objects.filter(student_card_id=student_name_or_card_id).first()
+            if student is None:
+                students = Student.objects.filter(
+                    user__first_name__in=student_name_or_card_id.split(),
+                    user__last_name__in=student_name_or_card_id.split()
+                )
+                if students.count() > 1:
+                    errors.append(f'Group has more than one student with name {row[0]}')
+                student = students.first()
+
+            if student is None:
+                errors.append(f'No student for {row[0]} was found.')
+                continue
+
+            grade = Grade(event=event, student=student, date_of_registration=datetime.now())
+            task_points = []
+
+            for i, task in enumerate(tasks, start=1):
+                points = int(row[i])
+                if points > task.max_points:
+                    errors.append(f'Max points for task {task} is {task.max_points} but given value was {points}')
+                task_points.append(TaskPoints(grade=grade, task=task, points=min(points, task.max_points)))
+
+            grades.append((grade, task_points))
+
+    return grades, errors
+
+
+def confirm_upload(request, event_id, csv_file_path):
+    grades, errors = parse_grades_file(csv_file_path, event_id)
+    tasks = Task.objects.filter(event_id=event_id)
+    for grade, task_points_list in grades:
+        grade.save()
+        for task_points, task in zip(task_points_list, tasks):
+            task_points.grade = grade
+            task_points.task = task
+
+        TaskPoints.objects.bulk_create(task_points_list)
+
+    os.remove(csv_file_path)
+
+    return HttpResponseRedirect(f'/courses/group/{Event.objects.get(id=event_id).group_id}')
+
+
+def cancel_upload(request, event_id, csv_file_path):
+    os.remove(csv_file_path)
+
+    return HttpResponseRedirect(f'/courses/group/{Event.objects.get(id=event_id).group_id}')
 
 
 def pick_register(request):

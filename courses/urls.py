@@ -23,6 +23,8 @@ urlpatterns = [
     path('group/<int:group_id>/createEvent', views.create_event, name='create_event'),
     path('createTasks/<int:event_id>/<int:tasks_count>', views.create_event_tasks, name='create_tasks'),
     path('myGrades', views.blank, name='blank'),
-
+    path('uploadGrades/<int:event_id>', views.upload_grades, name='upload_grades'),
+    path('confirmUpload/<int:event_id>/<path:csv_file_path>', views.confirm_upload, name='confirm_upload'),
+    path('cancelUpload/<int:event_id>/<path:csv_file_path>', views.cancel_upload, name='cancel_upload'),
 ]
 
