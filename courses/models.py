@@ -45,6 +45,7 @@ def update_teacher_profile(sender, instance, created, **kwargs):
         Teacher.objects.create(user=instance)
     instance.teacher.save()
 
+
 class Course(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
@@ -101,7 +102,10 @@ class Grade(models.Model):
         return self.taskpoints_set.aggregate(Sum('points'))['points__sum']
 
     def max_points(self):
-        return self.presence.event.max_points()
+        return self.event.max_points()
+
+    def __str__(self):
+        return f'{self.student}, {self.event}'
 
 
 class Task(models.Model):
@@ -109,8 +113,14 @@ class Task(models.Model):
     name = models.CharField(max_length=100)
     max_points = models.PositiveSmallIntegerField()
 
+    def __str__(self):
+        return f'{self.event}, {self.name}'
+
 
 class TaskPoints(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE)
     grade = models.ForeignKey(Grade, on_delete=models.CASCADE)
     points = models.PositiveSmallIntegerField()
+
+    def __str__(self):
+        return f'{self.task}, {self.points}/{self.task.max_points}'

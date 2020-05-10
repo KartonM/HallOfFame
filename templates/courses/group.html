@@ -16,7 +16,12 @@
         </li>
     {% for event in group.event_set.all %}
         <li class="list-group-item">
-            {{ event }}
+        <div class="row">
+            <div class="col-9">{{ event }}</div>
+            {% if event.task_set.count > 0 %}
+            <div class="col-3"><a href="/addGrades/{{ event.id }}" class="btn btn-primary btn-sm">Add grades</a></div>
+            {% endif %}
+        </div>
         </li>
     {% endfor %}
     </ul>

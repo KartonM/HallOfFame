@@ -6,11 +6,10 @@ from django.http import HttpResponse
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import render, redirect
-from courses.forms import SignUpStudentForm, SignUpTeacherForm
-
+from courses.forms import SignUpStudentForm, SignUpTeacherForm, RegisterTaskPointsForm, PickStudentForm
 
 # Create your views here.
-from courses.models import Course, Teacher, Group, Event, Task
+from courses.models import Course, Teacher, Group, Event, Task, Student, Grade, TaskPoints
 from courses.forms import CreateCourseForm, CreateGroupForm, CreateEventForm, CreateTaskForm
 from django.forms import formset_factory
 
@@ -108,6 +107,43 @@ def create_event_tasks(request, event_id, tasks_count):
         formset = TasksFormSet()
 
     return render(request, 'courses/create_tasks.html', {'formset': formset})
+
+
+def add_grades(request, event_id):
+    event = Event.objects.get(id=event_id)
+    tasks_count = Task.objects.filter(event=event).count()
+    TaskPointsFormSet = formset_factory(RegisterTaskPointsForm, extra=tasks_count)
+
+    if request.method == 'POST':
+        formset = TaskPointsFormSet(request.POST)
+        form = PickStudentForm(request.POST)
+        if formset.is_valid() and form.is_valid():
+            grade = Grade.objects.create(
+                event=event,
+                student=form.cleaned_data['student'],
+                date_of_registration=datetime.now()
+            )
+            tasks = Task.objects.filter(event=event)
+            for (points_form, task) in zip(formset, tasks):
+                TaskPoints.objects.create(
+                    grade=grade,
+                    task=task,
+                    points=max(points_form.cleaned_data['points'], task.max_points)
+                )
+            return HttpResponseRedirect(f'/courses/group/{event.group.id}')
+    else:
+        formset = TaskPointsFormSet()
+        group_students_ids = event.group.courseparticipation_set.values_list('student', flat=True)
+        graded_students_ids = event.grade_set.values_list('student', flat=True)
+        students_choice = Student.objects.filter(pk__in=group_students_ids).exclude(pk__in=graded_students_ids)
+        form = PickStudentForm(students_choice_set=students_choice)
+        task_names = Task.objects.filter(event=event).values_list('name', flat=True)
+
+    return render(
+        request,
+        'courses/add_grades.html',
+        {'points_formset': formset, 'student_form': form, 'task_names': task_names}
+    )
 
 
 def pick_register(request):
