@@ -10,13 +10,18 @@
     <div class="col">
     {% if courses %}
         <ul class="list-group">
+        <li class="list-group-item">
+            <a href="/courses/createCourse" class="btn btn-primary">Create course</a>
+        </li>
         {% for course in courses %}
-            <li class="list-group-item">
+        <li class="list-group-item">
+            <a href="/courses/{{ course.id }}" class="text-decoration-none text-dark">
                 <div class="row">
                     <div class="col-10">{{ course.name }}</div>
                     <div class="col-2 text-secondary text-right">seats: {{ course.seats_count }}</div>
                 </div>
-            </li>
+            </a>
+        </li>
         {% endfor %}
         </ul>
     {% else %}

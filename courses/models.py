@@ -59,12 +59,12 @@ class Course(models.Model):
 
 class Group(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    group_tag = models.CharField(max_length=15)
+    tag = models.CharField(max_length=15)
     size = models.PositiveSmallIntegerField()
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f'{self.course} {self.group_tag}'
+        return f'{self.teacher}, {self.tag}'
 
 
 class CourseParticipation(models.Model):
@@ -79,16 +79,16 @@ class CourseParticipation(models.Model):
 class Event(models.Model):
     name = models.CharField(max_length=100)
     date = models.DateTimeField()
-    is_presence_obligatory = models.BooleanField(default=True)
     is_required_to_pass_the_course = models.BooleanField()
     min_tasks_positive = models.PositiveSmallIntegerField(default=0)
     weight = models.PositiveSmallIntegerField()
+    group = models.ForeignKey(Group, on_delete=models.CASCADE)
 
     def max_points(self):
         return self.task_set.aggregate(Sum('max_points'))['max_points__sum']
 
     def __str__(self):
-        return f'{self.name}, {self.date}'
+        return f'{self.name}, {self.date.date()}'
 
 
 class Grade(models.Model):
