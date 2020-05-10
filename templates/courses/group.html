@@ -24,10 +24,6 @@
                 <form class="form-inline" action="/courses/uploadGrades/{{ event.id }}" method="post" enctype="multipart/form-data">
                     {% csrf_token %}
                     <div class="row">
-{#                        <div class="custom-file col-8">#}
-{#                         {{ file_upload_form.file|add_class:"custom-file-input" }}#}
-{#                          <label class="custom-file-label" for="customFile">Choose file</label>#}
-{#                        </div>#}
                         <div class="col-8">
                             {{ file_upload_form.file }}
                         </div>
