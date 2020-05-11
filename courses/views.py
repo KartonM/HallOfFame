@@ -7,12 +7,14 @@ from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import render, redirect
 from courses.forms import SignUpStudentForm, SignUpTeacherForm
+from .filters import UserFilter
 
 
 # Create your views here.
-from courses.models import Course, Teacher, Group, Event, Task
+from courses.models import Course, Teacher, Group, Event, Task, CourseParticipation
 from courses.forms import CreateCourseForm, CreateGroupForm, CreateEventForm, CreateTaskForm
 from django.forms import formset_factory
+
 
 
 def index(request):
@@ -152,3 +154,35 @@ def signup_teacher(request):
     return render(request=request,
                   template_name='registration/register.html',
                   context={'form': form})
+
+
+def join_group(request, pk, student):
+    group_to_join = Group.objects.get(pk=pk)
+
+    CourseParticipation.objects.create(
+        group=group_to_join,
+        student=student,
+    )
+    return redirect(request, 'home')
+
+
+def search(request):
+    course_list = User.objects.all()
+    course_filter = UserFilter(request.GET, queryset=course_list)
+    return render(request, 'courses/index.html', {'filter': course_filter})
+
+
+def join(request, group_id):
+    group = Group.objects.get(pk=group_id)
+
+    if request.method == 'POST':
+        CourseParticipation.objects.create(
+            group=group,
+            student=request.user.student,
+        )
+        return redirect('/groups/' + str(group_id) )
+    else:
+        return render(request, '/courses/index.html')
+
+
+

@@ -2,9 +2,11 @@ from django.urls import path
 from . import views
 from django.conf.urls import url
 
+app_name = "HallOfFame"
 
 urlpatterns = [
     path('', views.index, name='index'),
+    path('', views.search, name='index'),
 
     path('accounts/signupStudent', views.signup_student, name='signup'),
     path('accounts/signupTeacher', views.signup_teacher, name='signup'),
@@ -23,6 +25,7 @@ urlpatterns = [
     path('group/<int:group_id>/createEvent', views.create_event, name='create_event'),
     path('createTasks/<int:event_id>/<int:tasks_count>', views.create_event_tasks, name='create_tasks'),
     path('myGrades', views.blank, name='blank'),
+    path('group<int:group_id>/join/', views.join, name='join'),
 
 ]
 

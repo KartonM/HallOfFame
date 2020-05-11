@@ -9,6 +9,16 @@
         <li class="list-group-item">
             <a href="/courses/createCourse" class="btn btn-primary">Create course</a>
         </li>
+          <form method="get">{{ filter.form.as_p }}
+              <button type="submit">Search</button>
+          </form>
+          {% for course in filter.qs %}
+            <a href="/courses/{{ course.id }}" class="text-decoration-none text-dark">
+                <div class="row">
+                    <div class="col-10">{{ course.name }}</div>
+                    <div class="col-2 text-secondary text-right">seats: {{ course.seats_count }}</div>
+                </div>
+            </a>          {% endfor %}
         {% for course in courses %}
         <li class="list-group-item">
             <a href="/courses/{{ course.id }}" class="text-decoration-none text-dark">

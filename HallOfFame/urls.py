@@ -15,6 +15,8 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.conf.urls import url
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -32,6 +34,9 @@ urlpatterns = [
     path('courses/<int:course_id>/<int:group_id>/events', include('courses.urls')),  # events divided for past and upcomming
     path('courses/myGrades', include('courses.urls')),  # list of grades from all courses (students only)
 
+    path('courses/group/<int:group_id>', include('courses.urls')),
+
+
     # marking (for teachers only)
     path('courses/<int:course_id>/<int:group_id>/<int:event_id>/addGrades', include('courses.urls')),  # adding grades for event
 
@@ -39,5 +44,6 @@ urlpatterns = [
     path('courses/createCourse', include('courses.urls')),  # create course form
     path('courses/<int:course_id>/createGroup', include('courses.urls')),  # create group form
     path('courses/<int:course_id>/<int:group_id>/createEvent', include('courses.urls')),  # create event in group form
+    url(r'^courses/group/<int:group_id', include('courses.urls', namespace='HallOfFame'))
 
 ]

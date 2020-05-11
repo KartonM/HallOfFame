@@ -12,7 +12,17 @@
     <h5>Events:</h5>
     <ul class="list-group">
         <li class="list-group-item">
+            {% if user.teacher %}
             <a href="/courses/group/{{ group.id }}/createEvent" class="btn btn-primary">Create event</a>
+            {% endif %}
+            {% if user.student %}
+                 <form method ='POST' id= 'join' action="{% url 'HallOfFame:join' group.id %}" >
+                    {% csrf_token %}
+                         <button type="submit">Join</button>
+                 <input type="hidden" >
+ </form>
+
+            {% endif %}
         </li>
     {% for event in group.event_set.all %}
         <li class="list-group-item">
