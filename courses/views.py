@@ -3,6 +3,7 @@ import os
 from datetime import datetime
 
 from django.contrib.auth import login, authenticate
+from django.contrib.auth.decorators import login_required
 from django.forms import formset_factory
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
@@ -279,3 +280,18 @@ def signup_teacher(request):
     return render(request=request,
                   template_name='registration/register.html',
                   context={'form': form})
+
+
+@login_required
+def upcoming_events(request):
+    user = request.user
+    events = []
+    if user.student is not Student.DoesNotExist:
+        event_ids = user.student.courseparticipation_set.values_list('group__event', flat=True)
+        events = Event.objects.filter(pk__in=event_ids).filter(date__gte=datetime.now()).order_by('-date')
+    elif user.teacher is not Teacher.DoesNotExist:
+        event_ids = user.teacher.group_set.values_list('event', flat=True)
+        events = Event.objects.filter(pk__in=event_ids).filter(date__gte=datetime.now()).order_by('-date')
+    return render(request=request,
+                  template_name='courses/upcoming_events.html',
+                  context={'events': events})

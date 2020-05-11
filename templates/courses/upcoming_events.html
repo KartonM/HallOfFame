@@ -1,0 +1,23 @@
+{% extends 'courses/layout.html' %}
+
+{% block content %}
+<h2>Courses: </h2>
+<div class="row mt-3">
+    <div class="col">
+    {% if events %}
+        <ul class="list-group">
+        {% for event in events %}
+        <li class="list-group-item">
+            <div class="row">
+                <div class="col-10">{{ event.name }}</div>
+                <div class="col-2 text-secondary text-right">date: {{ event.date }}</div>
+            </div>
+        </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No courses are available</p>
+    {% endif %}
+    </div>
+</div>
+{% endblock %}
