@@ -24,11 +24,11 @@ class Student(models.Model):
         return self.user.get_full_name()
 
 
-@receiver(post_save, sender=User)
-def update_student_profile(sender, instance, created, **kwargs):
-    if created:
-        Student.objects.create(user=instance)
-    instance.student.save()
+# @receiver(post_save, sender=User)
+# def update_student_profile(sender, instance, created, **kwargs):
+#     if created:
+#         Student.objects.create(user=instance)
+#     instance.student.save()
 
 
 class Teacher(models.Model):
@@ -39,11 +39,11 @@ class Teacher(models.Model):
         return f'{self.academic_degree} {self.user.get_full_name()}'
 
 
-@receiver(post_save, sender=User)
-def update_teacher_profile(sender, instance, created, **kwargs):
-    if created:
-        Teacher.objects.create(user=instance)
-    instance.teacher.save()
+# @receiver(post_save, sender=User)
+# def update_teacher_profile(sender, instance, created, **kwargs):
+#     if created:
+#         Teacher.objects.create(user=instance)
+#     instance.teacher.save()
 
 
 class Course(models.Model):
@@ -89,7 +89,7 @@ class Event(models.Model):
         return self.task_set.aggregate(Sum('max_points'))['max_points__sum']
 
     def __str__(self):
-        return f'{self.name}, {self.date.date()}'
+        return f'{self.name}; {self.date.date().strftime("%A %d. %B %Y")}'
 
 
 class Grade(models.Model):

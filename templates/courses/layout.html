@@ -18,7 +18,7 @@
           <span class="navbar-brand mb-0 h1">
 
             {% if user.is_authenticated %}
-                  <p><a class="text-dark" href="{% url 'logout' %}">logout</a></p>
+                  <p>{{ request.user }} <a class="text-dark" href="{% url 'logout' %}">logout</a></p>
             {% endif %}
           </span>
     </nav>

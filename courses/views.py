@@ -286,10 +286,12 @@ def signup_teacher(request):
 def upcoming_events(request):
     user = request.user
     events = []
-    if user.student is not Student.DoesNotExist:
+    student = Student.objects.filter(user__username__exact=request.user.username).first()
+    teacher = Teacher.objects.filter(user__username__exact=request.user.username).first()
+    if student is not None:
         event_ids = user.student.courseparticipation_set.values_list('group__event', flat=True)
         events = Event.objects.filter(pk__in=event_ids).filter(date__gte=datetime.now()).order_by('-date')
-    elif user.teacher is not Teacher.DoesNotExist:
+    elif teacher is not None:
         event_ids = user.teacher.group_set.values_list('event', flat=True)
         events = Event.objects.filter(pk__in=event_ids).filter(date__gte=datetime.now()).order_by('-date')
     return render(request=request,

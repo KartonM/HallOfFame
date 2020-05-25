@@ -28,7 +28,10 @@ def generate_user():
     last_name = fake.last_name()
     username = (first_name + last_name).lower()
     email = f'{first_name[0]}.{last_name}@{fake.free_email_domain()}'
-    return User.objects.create(username=username, email=email, password='qweqweqwe', first_name=first_name, last_name=last_name)
+    user = User.objects.create(username=username, email=email, password='qweqweqwe', first_name=first_name, last_name=last_name)
+    user.set_password('qweqweqwe')
+    user.save()
+    return user
 
 
 def generate_users(count):
