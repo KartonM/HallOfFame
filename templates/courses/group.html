@@ -40,15 +40,15 @@
     </ul>
 
     <h5 class="mt-3">Members:</h5>
-    {% if group.courseparticipation_set.count > 0 %}
+{#    {% if members.count > 0 %}#}
         <ul>
-        {% for course_participation in group.courseparticipation_set.all %}
+        {% for member, grade in members %}
             <li>
-                {{ course_participation.student }}
+                {{ member }}, current final: {{ grade }}
             </li>
         {% endfor %}
         </ul>
-    {% else %}
-        <p>Group has no members</p>
-    {% endif %}
+{#    {% else %}#}
+{#        <p>Group has no members</p>#}
+{#    {% endif %}#}
 {% endblock %}

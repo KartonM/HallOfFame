@@ -23,6 +23,32 @@ class Student(models.Model):
     def __str__(self):
         return self.user.get_full_name()
 
+    def calculate_current_final(self, group_id):
+        grades = self.grade_set.filter(event__group_id=group_id)
+
+        if not any(grades):
+            return 'No grades so far'
+
+        grades_for_events_required_to_pass = grades.filter(event__is_required_to_pass_the_course=True)
+        if any(grades_for_events_required_to_pass):
+            has_failed_event_required_to_pass = any(
+                grade.points() / grade.max_points() < 0.5
+                for grade in grades_for_events_required_to_pass
+            )
+            if has_failed_event_required_to_pass:
+                return 'Has not passed required event'
+
+        points = 0.0
+        max_points = 0.0
+
+        for grade in grades:
+            points = points + (grade.points() * grade.event.weight)
+            max_points = max_points + (grade.max_points() * grade.event.weight)
+
+        percentage = (points / max_points) * 100
+
+        return f'{int(round(percentage))}%'
+
 
 # @receiver(post_save, sender=User)
 # def update_student_profile(sender, instance, created, **kwargs):
@@ -99,6 +125,14 @@ class Grade(models.Model):
     date_of_registration = models.DateTimeField()
 
     def points(self):
+        min_tasks_positive = self.event.min_tasks_positive
+        if min_tasks_positive > 0:
+            positive_tasks_count = sum(
+                task_points.points / task_points.task.max_points >= 0.5
+                for task_points in self.taskpoints_set.all()
+            )
+            if positive_tasks_count < min_tasks_positive:
+                return 0
         return self.taskpoints_set.aggregate(Sum('points'))['points__sum']
 
     def max_points(self):

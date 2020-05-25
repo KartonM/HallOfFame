@@ -64,7 +64,13 @@ def create_group(request, course_id):
 
 def group(request, group_id):
     group = Group.objects.get(id=group_id)
-    return render(request, 'courses/group.html', {'group': group, 'file_upload_form': FileUploadForm()})
+    students = [course_participation.student for course_participation in group.courseparticipation_set.all()]
+    members_with_grades = [(student, student.calculate_current_final(group_id)) for student in students]
+    return render(
+        request,
+        'courses/group.html',
+        {'group': group, 'file_upload_form': FileUploadForm(), 'members': members_with_grades}
+    )
 
 
 def create_event(request, group_id):
