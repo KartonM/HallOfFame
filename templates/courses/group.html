@@ -17,7 +17,7 @@
     {% for event in group.event_set.all %}
         <li class="list-group-item">
         <div class="row">
-            <div class="col-6">{{ event }}</div>
+            <div class="col-6">{{ event }}, avg: {{ event.average_grade }}</div>
             {% if event.task_set.count > 0 %}
             <div class="col-2"><a href="/addGrades/{{ event.id }}" class="btn btn-primary">Add grades</a></div>
             <div class="col-4">

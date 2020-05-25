@@ -114,6 +114,21 @@ class Event(models.Model):
     def max_points(self):
         return self.task_set.aggregate(Sum('max_points'))['max_points__sum']
 
+    def average_grade(self):
+        if self.task_set.count() <= 0:
+            return '<no tasks>'
+
+        grades = self.grade_set.all()
+        if len(grades) <= 0:
+            return '<no grades yet>'
+
+        points_sum = sum(grade.points() for grade in grades)
+        max_points_sum = len(grades) * self.max_points()
+
+        percentage = (points_sum / max_points_sum) * 100
+
+        return f'{int(round(percentage))}%'
+
     def __str__(self):
         return f'{self.name}; {self.date.date().strftime("%A %d. %B %Y")}'
 
