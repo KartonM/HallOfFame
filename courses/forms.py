@@ -3,8 +3,8 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from datetime import datetime
 from django.forms import SelectDateWidget
-from courses.models import Teacher
 from django.core.validators import RegexValidator
+from courses.models import Teacher, Student
 
 DEGREE_CHOICES = [
     (1, 'inż.'),
@@ -72,3 +72,28 @@ class CreateEventForm(forms.Form):
 class CreateTaskForm(forms.Form):
     name = forms.CharField(max_length=100)
     max_points = forms.IntegerField()
+
+
+class RegisterTaskPointsForm(forms.Form):
+    points = forms.IntegerField(initial=0, min_value=0)
+
+    # def __init__(self, *args, **kwargs):
+    #     max_points = kwargs.pop('max_points')
+    #     super(RegisterTaskPointsForm, self).__init__(*args, **kwargs)
+    #     self.fields['points'].max_value = max_points
+
+
+class PickStudentForm(forms.Form):
+    student = forms.ModelChoiceField(queryset=Student.objects.all())
+
+    def __init__(self, *args, **kwargs):
+        if 'students_choice_set' in kwargs:
+            students_choice_set = kwargs.pop('students_choice_set')
+            super(PickStudentForm, self).__init__(*args, **kwargs)
+            self.fields['student'].queryset = students_choice_set
+        else:
+            super(PickStudentForm, self).__init__(*args, **kwargs)
+
+
+class FileUploadForm(forms.Form):
+    file = forms.FileField()

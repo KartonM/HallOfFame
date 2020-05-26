@@ -1,0 +1,38 @@
+{% extends 'courses/layout.html' %}
+{% load widget_tweaks %}
+{% block content %}
+    <h2>Register grade</h2>
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ points_formset.management_form }}
+        <div class="form-group">
+            {{ student_form.student.errors }}
+            <label for="{{ student_form.student.id_for_label }}">Studeent:</label>
+            {{ student_form.student|add_class:"form-control" }}
+        </div>
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+                {% for name in task_names %}
+                  <th scope="col">{{ name }}</th>
+                {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+                {% for form in points_formset %}
+                    <td>
+                        <div class="form-group">
+                            {{ form.points.errors }}
+                            {{ form.points|add_class:"form-control" }}
+                        </div>
+                    </td>
+                {% endfor %}
+            </tr>
+          </tbody>
+        </table>
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+    </form>
+{% endblock %}
