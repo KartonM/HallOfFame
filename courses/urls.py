@@ -26,5 +26,6 @@ urlpatterns = [
     path('uploadGrades/<int:event_id>', views.upload_grades, name='upload_grades'),
     path('confirmUpload/<int:event_id>/<path:csv_file_path>', views.confirm_upload, name='confirm_upload'),
     path('cancelUpload/<int:event_id>/<path:csv_file_path>', views.cancel_upload, name='cancel_upload'),
+    path('myUpcomingEvents/', views.upcoming_events, name='upcoming_events'),
 ]
 

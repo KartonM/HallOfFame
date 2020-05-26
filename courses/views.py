@@ -3,6 +3,7 @@ import os
 from datetime import datetime
 
 from django.contrib.auth import login, authenticate
+from django.contrib.auth.decorators import login_required
 from django.forms import formset_factory
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
@@ -63,7 +64,13 @@ def create_group(request, course_id):
 
 def group(request, group_id):
     group = Group.objects.get(id=group_id)
-    return render(request, 'courses/group.html', {'group': group, 'file_upload_form': FileUploadForm()})
+    students = [course_participation.student for course_participation in group.courseparticipation_set.all()]
+    members_with_grades = [(student, student.calculate_current_final(group_id)) for student in students]
+    return render(
+        request,
+        'courses/group.html',
+        {'group': group, 'file_upload_form': FileUploadForm(), 'members': members_with_grades}
+    )
 
 
 def create_event(request, group_id):
@@ -279,3 +286,20 @@ def signup_teacher(request):
     return render(request=request,
                   template_name='registration/register.html',
                   context={'form': form})
+
+
+@login_required
+def upcoming_events(request):
+    user = request.user
+    events = []
+    student = Student.objects.filter(user__username__exact=request.user.username).first()
+    teacher = Teacher.objects.filter(user__username__exact=request.user.username).first()
+    if student is not None:
+        event_ids = user.student.courseparticipation_set.values_list('group__event', flat=True)
+        events = Event.objects.filter(pk__in=event_ids).filter(date__gte=datetime.now()).order_by('-date')
+    elif teacher is not None:
+        event_ids = user.teacher.group_set.values_list('event', flat=True)
+        events = Event.objects.filter(pk__in=event_ids).filter(date__gte=datetime.now()).order_by('-date')
+    return render(request=request,
+                  template_name='courses/upcoming_events.html',
+                  context={'events': events})
