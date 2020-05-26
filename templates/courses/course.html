@@ -10,14 +10,21 @@
     <p>{{ course.description }}</p>
 
     <h5>Groups:</h5>
+    {%  if course.group_set.all %}
     <ul class="list-group">
     {% for group in course.group_set.all %}
         <li class="list-group-item">
             <a href="/courses/group/{{ group.id }}" class="text-decoration-none text-dark">{{ group }}</a>
         </li>
     {% endfor %}
+    {%  else %}
+            <h6 class="text-decoration-none text-dark">No group yet created.</h6>
+    {% endif %}
+
+    {%  if user.teacher %}
         <li class="list-group-item">
             <a href="/courses/{{ course.id }}/createGroup" class="btn btn-primary">Create group</a>
         </li>
+    {%  endif %}
     </ul>
 {% endblock %}

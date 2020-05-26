@@ -9,17 +9,52 @@ from django.shortcuts import render, redirect
 from courses.forms import SignUpStudentForm, SignUpTeacherForm
 from .filters import UserFilter
 
-
 # Create your views here.
-from courses.models import Course, Teacher, Group, Event, Task, CourseParticipation
+from courses.models import Course, Teacher, Group, Event, Task, CourseParticipation, Student
 from courses.forms import CreateCourseForm, CreateGroupForm, CreateEventForm, CreateTaskForm
 from django.forms import formset_factory
 
 
+def is_valid_seacrchparam(param):
+    return param != '' and param is not None
+
+
+def filter(request):
+    qs = Course.objects.all()
+    teachers = Teacher.objects.all()
+    name_contains_query = request.GET.get('name_contains')
+    description_query = request.GET.get('description')
+    view_count_min = request.GET.get('view_count_min')
+    view_count_max = request.GET.get('view_count_max')
+    tutor = request.GET.get('teacher')
+
+    if is_valid_seacrchparam(name_contains_query):
+        qs = qs.filter(name__icontains=name_contains_query)
+
+    elif is_valid_seacrchparam(description_query):
+        qs = qs.filter(description__icontains=description_query)
+
+    elif is_valid_seacrchparam(tutor) and tutor != 'Choose...':
+        logger.error(tutor)
+        id = Teacher.objects.filter(user_id=tutor).values('user_id')[0]['user_id']
+        print(tutor)
+        qs = qs.filter(tutor_id=id)
+
+    if is_valid_seacrchparam(view_count_min):
+        qs = qs.filter(views__gte=view_count_min)
+
+    if is_valid_seacrchparam(view_count_max):
+        qs = qs.filter(views__lt=view_count_max)
+
+    return qs
+
 
 def index(request):
-    all_courses = Course.objects.all()
-    context = {'courses': all_courses}
+    qs = filter(request)
+    context = {
+        'courses': qs,
+        'teachers': Teacher.objects.all()
+    }
     return render(request, 'courses/index.html', context)
 
 
@@ -121,8 +156,8 @@ def signup_student(request):
         form = SignUpStudentForm(request.POST)
         if form.is_valid():
             user = form.save()
+            Student.objects.create(student_card_id=form.cleaned_data.get('index_no'), user=user)
             user.refresh_from_db()  # load the profile instance created by the signal
-            user.student.index_no = form.cleaned_data.get('index_no')
             user.save()
             raw_password = form.cleaned_data.get('password1')
             user = authenticate(username=user.username, password=raw_password)
@@ -142,7 +177,7 @@ def signup_teacher(request):
         if form.is_valid():
             user = form.save()
             user.refresh_from_db()  # load the profile instance created by the signal
-            user.teacher.academic_degree = form.cleaned_data.get('academic_degree')
+            Teacher.objects.create(academic_degree=form.cleaned_data.get('academic_degree'), user=user)
             user.save()
             raw_password = form.cleaned_data.get('password1')
             user = authenticate(username=user.username, password=raw_password)
@@ -180,7 +215,7 @@ def join(request, group_id):
             group=group,
             student=request.user.student,
         )
-        return redirect('/groups/' + str(group_id) )
+        return redirect('/group/' + str(group_id) )
     else:
         return render(request, '/courses/index.html')
 

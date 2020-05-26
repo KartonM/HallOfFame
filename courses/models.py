@@ -24,12 +24,6 @@ class Student(models.Model):
         return self.user.get_full_name()
 
 
-@receiver(post_save, sender=User)
-def update_student_profile(sender, instance, created, **kwargs):
-    if created:
-        Student.objects.create(user=instance)
-    instance.student.save()
-
 
 class Teacher(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
@@ -39,11 +33,6 @@ class Teacher(models.Model):
         return f'{self.academic_degree} {self.user.get_full_name()}'
 
 
-@receiver(post_save, sender=User)
-def update_teacher_profile(sender, instance, created, **kwargs):
-    if created:
-        Teacher.objects.create(user=instance)
-    instance.teacher.save()
 
 class Course(models.Model):
     name = models.CharField(max_length=200)
