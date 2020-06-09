@@ -36,7 +36,7 @@ def filter(request):
         qs = qs.filter(description__icontains=description_query)
 
     elif is_valid_seacrchparam(tutor) and tutor != 'Choose...':
-        logger.error(tutor)
+        # logger.error(tutor)
         id = Teacher.objects.filter(user_id=tutor).values('user_id')[0]['user_id']
         print(tutor)
         qs = qs.filter(tutor_id=id)
@@ -70,7 +70,7 @@ def create_course(request):
             course = Course.objects.create(
                 name=form.cleaned_data['name'],
                 description=form.cleaned_data['description'],
-                tutor=Teacher.objects.first()  # TODO use id of logged in teacher instead
+                tutor=request.user.teacher
             )
             return HttpResponseRedirect(f'{course.id}')
     else:
@@ -227,7 +227,7 @@ def parse_grades_file(file_path, event_id):
     event = Event.objects.get(id=event_id)
     tasks = Task.objects.filter(event=event)
     with open(file_path) as csv_file:
-        csv_reader = csv.reader(csv_file, delimiter=',')
+        csv_reader = csv.reader(csv_file, delimiter=';')
         for row in csv_reader:
             if len(row) < len(tasks) + 1:
                 errors.append(f'Following row doesn\'t have enough columns: {row}')
@@ -373,3 +373,18 @@ def upcoming_events(request):
                   template_name='courses/upcoming_events.html',
                   context={'events': events})
 
+
+@login_required
+def grades(request):
+    student = Student.objects.filter(user__username__exact=request.user.username).first()
+    grades = [
+        (
+            f'{grade.event.group.course}, {grade.event.name}',
+            f'{int(round((grade.points()/grade.max_points()) * 100))}%'
+        )
+        for grade in student.grade_set.all()
+    ]
+
+    return render(request=request,
+                  template_name='courses/grades.html',
+                  context={'grades': grades})
