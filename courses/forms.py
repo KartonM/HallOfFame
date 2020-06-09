@@ -62,11 +62,6 @@ class CreateTaskForm(forms.Form):
 class RegisterTaskPointsForm(forms.Form):
     points = forms.IntegerField(initial=0, min_value=0)
 
-    # def __init__(self, *args, **kwargs):
-    #     max_points = kwargs.pop('max_points')
-    #     super(RegisterTaskPointsForm, self).__init__(*args, **kwargs)
-    #     self.fields['points'].max_value = max_points
-
 
 class PickStudentForm(forms.Form):
     student = forms.ModelChoiceField(queryset=Student.objects.all())

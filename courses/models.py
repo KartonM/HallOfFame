@@ -1,8 +1,6 @@
 from django.db import models
 from django.db.models import Sum
 from django.contrib.auth.models import User
-from django.dispatch import receiver
-from django.db.models.signals import post_save
 
 
 # Create your models here.
@@ -50,26 +48,12 @@ class Student(models.Model):
         return f'{int(round(percentage))}%'
 
 
-# @receiver(post_save, sender=User)
-# def update_student_profile(sender, instance, created, **kwargs):
-#     if created:
-#         Student.objects.create(user=instance)
-#     instance.student.save()
-
-
 class Teacher(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     academic_degree = models.CharField(max_length=32)
 
     def __str__(self):
         return f'{self.academic_degree} {self.user.get_full_name()}'
-
-
-# @receiver(post_save, sender=User)
-# def update_teacher_profile(sender, instance, created, **kwargs):
-#     if created:
-#         Teacher.objects.create(user=instance)
-#     instance.teacher.save()
 
 
 class Course(models.Model):
