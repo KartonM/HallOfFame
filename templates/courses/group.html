@@ -16,23 +16,42 @@
     {% for event in group.event_set.all %}
         <li class="list-group-item">
         <div class="row">
-            <div class="col-6">{{ event }}, avg: {{ event.average_grade }}</div>
+            <div class="col-6">{{ event }}, avg: {{ event.grades_statistics }}</div>
             {% if event.task_set.count > 0 %}
-            <div class="col-2"><a href="/addGrades/{{ event.id }}" class="btn btn-primary">Add grades</a></div>
-            <div class="col-4">
-                <form class="form-inline" action="/courses/uploadGrades/{{ event.id }}" method="post" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    <div class="row">
-                        <div class="col-8">
-                            {{ file_upload_form.file }}
-                        </div>
-                        <div class="col-4">
-                            <button type="submit" class="btn btn-outline-primary">Submit</button>
-                        </div>
+                {% if not user.teacher %}
+                    <div class="col-2"><a href="/addGrades/{{ event.id }}" class="btn btn-primary">Add grades</a></div>
+                    <div class="col-4">
+                        <form class="form-inline" action="/courses/uploadGrades/{{ event.id }}" method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <div class="row">
+                                <div class="col-8">
+                                    {{ file_upload_form.file }}
+                                </div>
+                                <div class="col-4">
+                                    <button type="submit" class="btn btn-outline-primary">Submit</button>
+                                </div>
+                            </div>
+                        </form>
                     </div>
-                </form>
-            </div>
-            {% endif %}
+                {% else %}
+                    <div class="row">
+                        <ul>
+                          <li>
+                              Average points: <b>{{ event.grades_statistics.mean }}</b>
+                          </li>
+                          <li>
+                              Variance of points: <b>{{ event.grades_statistics.variance }}</b>
+                          </li>
+                          <li>
+                              Median of points: <b>{{ event.grades_statistics.median }}</b>
+                          </li>
+                          <li>
+                              Best result: <b>{{ event.grades_statistics.best }}</b>
+                          </li>
+                        </ul>
+                    </div>
+                {% endif %}
+             {% endif %}
         </div>
         </li>
     {% endfor %}
@@ -62,6 +81,12 @@
             </li>
         {% endfor %}
         </ul>
+    <h4>
+        Number of students passing: {{ passing_students }}
+    </h4>
+    <h4>
+            Mean grade: {{ mean_grade }}
+    </h4>
 {#    {% else %}#}
 {#        <p>Group has no members</p>#}
 {#    {% endif %}#}
