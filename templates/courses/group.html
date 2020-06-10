@@ -16,9 +16,9 @@
     {% for event in group.event_set.all %}
         <li class="list-group-item">
         <div class="row">
-            <div class="col-6">{{ event }}, avg: {{ event.grades_statistics }}</div>
+            <div class="col-6">{{ event }}</div>
             {% if event.task_set.count > 0 %}
-                {% if not user.teacher %}
+                {% if user.teacher %}
                     <div class="col-2"><a href="/addGrades/{{ event.id }}" class="btn btn-primary">Add grades</a></div>
                     <div class="col-4">
                         <form class="form-inline" action="/courses/uploadGrades/{{ event.id }}" method="post" enctype="multipart/form-data">

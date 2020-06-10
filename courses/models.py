@@ -116,11 +116,6 @@ class Event(models.Model):
         if len(grades) <= 0:
             return {'mean': '', 'variance': '', 'median': '', 'best': ''}
 
-        grades_values = []
-
-        # for grade in grades
-        #     grades_values.push(grade.points())
-
         avg = mean(grade.points()/grade.max_points() for grade in grades)
         medium = median(grade.points()/grade.max_points() for grade in grades)
         var = 0
