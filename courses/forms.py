@@ -3,35 +3,50 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from datetime import datetime
 from django.forms import SelectDateWidget
+from django.core.validators import RegexValidator
 from courses.models import Teacher, Student
 
 DEGREE_CHOICES = [
     (1, 'inż.'),
-    (2, 'dr'),
-    (3, 'dr inż'),
-    (4, 'mgr'),
-    (5, 'dr hab.'),
+    (2, 'mgr'),
+    (3, 'mgr inż.'),
+    (4, 'dr'),
+    (5, 'dr inż'),
+    (7, 'dr hab.'),
 ]
 
 
+def check_degree(degree):
+    if degree is None:
+        raise forms.ValidationError("Select your academic degree")
+
+#
+# def check_index_length(index):
+#     if len(index) < 6:
+#         raise forms.ValidationError("Index to short")
+
+
 class SignUpStudentForm(UserCreationForm):
-    index_no = forms.CharField(max_length=30, help_text='Required.')
+    index_no = forms.CharField(max_length=30, help_text='Required.',
+                               validators=[RegexValidator(regex="^\d{6}$", message="Index should be 6 digits number", )])
     last_name = forms.CharField(max_length=30)
     first_name = forms.CharField(max_length=30)
 
     class Meta:
         model = User
-        fields = ('username', 'last_name', 'first_name', 'index_no', 'password1', 'password2', 'username')
+        fields = ('username', 'last_name', 'first_name', 'index_no', 'password1', 'password2')
 
 
 class SignUpTeacherForm(UserCreationForm):
-    academic_degree = forms.CharField(widget=forms.Select(choices=DEGREE_CHOICES), help_text='Required.')
+    academic_degree = forms.CharField(widget=forms.Select(choices=DEGREE_CHOICES),
+                                      help_text='Required.', validators=[check_degree, ])
     last_name = forms.CharField(max_length=30)
     first_name = forms.CharField(max_length=30)
 
+
     class Meta:
         model = User
-        fields = ('username', 'last_name', 'first_name', 'academic_degree', 'password1', 'password2', 'username')
+        fields = ('username', 'last_name', 'first_name', 'academic_degree', 'password1', 'password2')
 
 
 class CreateCourseForm(forms.Form):

@@ -7,17 +7,59 @@ from django.contrib.auth.decorators import login_required
 from django.forms import formset_factory
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
+from courses.forms import SignUpStudentForm, SignUpTeacherForm
+from .filters import UserFilter
+from statistics import mean
+from math import isnan
 
 from courses.forms import CreateCourseForm, CreateGroupForm, CreateEventForm, CreateTaskForm
 from courses.forms import SignUpStudentForm, SignUpTeacherForm, RegisterTaskPointsForm, PickStudentForm, FileUploadForm
-from courses.models import Course, Teacher, Group, Event, Task, Student, Grade, TaskPoints
+from courses.models import Course, Teacher, Group, Event, Task, Student, Grade, TaskPoints, CourseParticipation
 from courses.grades_csv import save_grades_file, parse_grades_file
+
 # Create your views here.
 
 
+def is_valid_seacrchparam(param):
+    return param != '' and param is not None
+
+
+def filter(request):
+    qs = Course.objects.all()
+    teachers = Teacher.objects.all()
+    name_contains_query = request.GET.get('name_contains')
+    description_query = request.GET.get('description')
+    view_count_min = request.GET.get('view_count_min')
+    view_count_max = request.GET.get('view_count_max')
+    tutor = request.GET.get('teacher')
+
+    if is_valid_seacrchparam(name_contains_query):
+        qs = qs.filter(name__icontains=name_contains_query)
+
+    elif is_valid_seacrchparam(description_query):
+        qs = qs.filter(description__icontains=description_query)
+
+    elif is_valid_seacrchparam(tutor) and tutor != 'Choose...':
+        # logger.error(tutor)
+        id = Teacher.objects.filter(user_id=tutor).values('user_id')[0]['user_id']
+        print(tutor)
+        qs = qs.filter(tutor_id=id)
+
+    if is_valid_seacrchparam(view_count_min):
+        qs = qs.filter(views__gte=view_count_min)
+
+    if is_valid_seacrchparam(view_count_max):
+        qs = qs.filter(views__lt=view_count_max)
+
+    return qs
+
+
 def index(request):
-    all_courses = Course.objects.all()
-    context = {'courses': all_courses}
+    qs = filter(request)
+    context = {
+        'courses': qs,
+        'teachers': Teacher.objects.all()
+    }
     return render(request, 'courses/index.html', context)
 
 
@@ -32,7 +74,7 @@ def create_course(request):
             course = Course.objects.create(
                 name=form.cleaned_data['name'],
                 description=form.cleaned_data['description'],
-                tutor=Teacher.objects.first()  # TODO use id of logged in teacher instead
+                tutor=request.user.teacher
             )
             return HttpResponseRedirect(f'{course.id}')
     else:
@@ -66,11 +108,17 @@ def create_group(request, course_id):
 def group(request, group_id):
     group = Group.objects.get(id=group_id)
     students = [course_participation.student for course_participation in group.courseparticipation_set.all()]
-    members_with_grades = [(student, student.calculate_current_final(group_id)) for student in students]
+    members_with_grades = [(student, student.get_final_percentage(group_id)) for student in students]
+    passing_grades = []
+    for grade in (student.calculate_current_final(group_id) for student in students):
+        if not isinstance(grade, str):
+            passing_grades.append(grade)
+    mean_grade = f'{int(round(mean(passing_grades)))}%' if len(passing_grades) > 0 else '-'
+    passing_students = sum(0 if isinstance(student.calculate_current_final(group_id=group_id), str) or student.calculate_current_final(group_id) < 0.5 else 1 for student in students)
     return render(
         request,
         'courses/group.html',
-        {'group': group, 'file_upload_form': FileUploadForm(), 'members': members_with_grades}
+        {'group': group, 'file_upload_form': FileUploadForm(), 'members': members_with_grades, 'mean_grade': mean_grade, 'passing_students': passing_students }
     )
 
 
@@ -174,7 +222,7 @@ def upload_grades(request, event_id):
 
     return HttpResponseRedirect(f'/courses/group/{Event.objects.get(id=event_id).group_id}')
 
-
+  
 def confirm_upload(request, event_id, csv_file_path):
     grades, errors = parse_grades_file(csv_file_path, event_id)
     tasks = Task.objects.filter(event_id=event_id)
@@ -206,8 +254,8 @@ def signup_student(request):
         form = SignUpStudentForm(request.POST)
         if form.is_valid():
             user = form.save()
+            Student.objects.create(student_card_id=form.cleaned_data.get('index_no'), user=user)
             user.refresh_from_db()  # load the profile instance created by the signal
-            user.student.index_no = form.cleaned_data.get('index_no')
             user.save()
             raw_password = form.cleaned_data.get('password1')
             user = authenticate(username=user.username, password=raw_password)
@@ -227,7 +275,7 @@ def signup_teacher(request):
         if form.is_valid():
             user = form.save()
             user.refresh_from_db()  # load the profile instance created by the signal
-            user.teacher.academic_degree = form.cleaned_data.get('academic_degree')
+            Teacher.objects.create(academic_degree=form.cleaned_data.get('academic_degree'), user=user)
             user.save()
             raw_password = form.cleaned_data.get('password1')
             user = authenticate(username=user.username, password=raw_password)
@@ -239,6 +287,36 @@ def signup_teacher(request):
     return render(request=request,
                   template_name='registration/register.html',
                   context={'form': form})
+
+
+def join_group(request, pk, student):
+    group_to_join = Group.objects.get(pk=pk)
+
+    CourseParticipation.objects.create(
+        group=group_to_join,
+        student=student,
+    )
+    return redirect(request, 'home')
+
+
+def search(request):
+    course_list = User.objects.all()
+    course_filter = UserFilter(request.GET, queryset=course_list)
+    return render(request, 'courses/index.html', {'filter': course_filter})
+
+
+def join(request, group_id):
+    group = Group.objects.get(pk=group_id)
+
+    if request.method == 'POST':
+        CourseParticipation.objects.create(
+            group=group,
+            student=request.user.student,
+        )
+        return redirect('/group/' + str(group_id) )
+    else:
+        return render(request, '/courses/index.html')
+
 
 
 @login_required
@@ -256,3 +334,19 @@ def upcoming_events(request):
     return render(request=request,
                   template_name='courses/upcoming_events.html',
                   context={'events': events})
+
+
+@login_required
+def grades(request):
+    student = Student.objects.filter(user__username__exact=request.user.username).first()
+    grades = [
+        (
+            f'{grade.event.group.course}, {grade.event.name}',
+            f'{int(round((grade.points()/grade.max_points()) * 100))}%'
+        )
+        for grade in student.grade_set.all()
+    ]
+
+    return render(request=request,
+                  template_name='courses/grades.html',
+                  context={'grades': grades})

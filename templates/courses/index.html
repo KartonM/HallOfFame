@@ -8,11 +8,61 @@
 <h2>Courses: </h2>
 <div class="row mt-3">
     <div class="col">
-    {% if courses %}
         <ul class="list-group">
-        <li class="list-group-item">
-            <a href="/courses/createCourse" class="btn btn-primary">Create course</a>
-        </li>
+            {% if user.teacher %}
+                <li class="list-group-item">
+                    <a href="/courses/createCourse" class="btn btn-primary">Create course</a>
+                </li>
+            {% endif %}
+
+        <h4>Search parameters: </h4>
+         <form method="GET" action=".">
+        <div class="form-row">
+            <div class="form-group col-12">
+                <div class="input-group">
+                    <input class="form-control py-2 border-right-0 border" type="search" name="name_contains" placeholder="Course name contains..." />
+                    <span class="input-group-append">
+                        <div class="input-group-text bg-transparent">
+                            <i class="fa fa-search"></i>
+                        </div>
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group col-12">
+                <div class="input-group">
+                    <input class="form-control py-2 border-right-0 border" type="search" name="description" placeholder="Description contains..." />
+                    <span class="input-group-append">
+                        <div class="input-group-text bg-transparent">
+                            <i class="fa fa-search"></i>
+                        </div>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+             <div class="form-group col-md-4">
+            <label for="teacher">Tutor</label>
+            <select id="teacher" class="form-control" name="teacher">
+              <option selected>Choose...</option>
+              {% for teacher in teachers %}
+              <option value="{{ teacher.user_id }}">{{ teacher  }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        <button type="submit" class="btn btn-primary">Search</button>
+      </form>
+        <h2>Courses: </h2>
+            {% if courses %}
+          {% for course in filter.qs %}
+            <a href="/courses/{{ course.id }}" class="text-decoration-none text-dark">
+                <div class="row">
+                    <div class="col-10">{{ course.name }}</div>
+                    <div class="col-2 text-secondary text-right">seats: {{ course.seats_count }}</div>
+                </div>
+            </a>
+          {% endfor %}
         {% for course in courses %}
         <li class="list-group-item">
             <a href="/courses/{{ course.id }}" class="text-decoration-none text-dark">
@@ -25,7 +75,7 @@
         {% endfor %}
         </ul>
     {% else %}
-        <p>No courses are available</p>
+        <p>No such courses are available</p>
     {% endif %}
     </div>
 </div>

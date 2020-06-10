@@ -1,19 +1,19 @@
 {% extends 'courses/layout.html' %}
 
 {% block content %}
-<h2>My upcoming events: </h2>
+<h2>My grades: </h2>
 <div class="row mt-3">
     <div class="col">
-    {% if events %}
+    {% if grades %}
         <ul class="list-group">
-        {% for event in events %}
+        {% for event, grade in grades %}
         <li class="list-group-item">
-            {{ event }}
+            {{ event }}: {{ grade }}
         </li>
         {% endfor %}
         </ul>
     {% else %}
-        <p>No upcoming events</p>
+        <p>You don't have any grades</p>
     {% endif %}
     </div>
 </div>
