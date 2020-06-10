@@ -7,6 +7,7 @@ from statistics import mean, median, variance
 from math import isnan
 
 
+
 # Create your models here.
 GRADES = (
     ('2.0', '2.0'),
@@ -47,7 +48,7 @@ class Student(models.Model):
             points = points + (grade.points() * grade.event.weight)
             max_points = max_points + (grade.max_points() * grade.event.weight)
 
-        return float(points) / max_points * 100
+        return points / max_points * 100
 
     def get_final_percentage(self, group_id):
         grade_in_percent = Student.calculate_current_final(self=self, group_id=group_id)
