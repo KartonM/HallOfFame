@@ -1,8 +1,10 @@
 from django.db import models
-from django.db.models import Sum
+from django.db.models import Sum, Avg, Max, Variance
 from django.contrib.auth.models import User
 from django.dispatch import receiver
 from django.db.models.signals import post_save
+from statistics import mean, median, variance
+from math import isnan
 
 
 # Create your models here.
@@ -45,9 +47,14 @@ class Student(models.Model):
             points = points + (grade.points() * grade.event.weight)
             max_points = max_points + (grade.max_points() * grade.event.weight)
 
-        percentage = (points / max_points) * 100
+        return float(points) / max_points * 100
 
-        return f'{int(round(percentage))}%'
+    def get_final_percentage(self, group_id):
+        grade_in_percent = Student.calculate_current_final(self=self, group_id=group_id)
+        if isinstance(grade_in_percent, str):
+            return grade_in_percent
+        else:
+            return f'{int(round(grade_in_percent))}%'
 
 
 class Teacher(models.Model):
@@ -99,6 +106,38 @@ class Event(models.Model):
 
     def max_points(self):
         return self.task_set.aggregate(Sum('max_points'))['max_points__sum']
+
+    def grades_statistics(self):
+        if self.task_set.count() <= 0:
+            return '<no tasks>'
+
+        grades = self.grade_set.all()
+        if len(grades) <= 0:
+            return {'mean': '', 'variance': '', 'median': '', 'best': ''}
+
+        grades_values = []
+
+        # for grade in grades
+        #     grades_values.push(grade.points())
+
+        avg = mean(grade.points()/grade.max_points() for grade in grades)
+        medium = median(grade.points()/grade.max_points() for grade in grades)
+        var = 0
+        if len(grades) > 1:
+            var = variance(grade.points()/grade.max_points() for grade in grades)
+
+        max_points = 0
+        for grade in grades:
+            points = grade.points() / grade.max_points()
+            if points > max_points:
+                max_points = points
+
+        avg = f'{int(round(avg * 100))}%'
+        medium = f'{int(round(medium * 100))}%'
+        var = f'{int(round(var * 100))}%'
+        max_points = f'{int(round(max_points * 100))}%'
+
+        return {'mean': avg, 'variance': var, 'median': medium, 'best': max_points}
 
     def average_grade(self):
         if self.task_set.count() <= 0:

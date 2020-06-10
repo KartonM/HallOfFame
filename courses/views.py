@@ -9,6 +9,8 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from courses.forms import SignUpStudentForm, SignUpTeacherForm
 from .filters import UserFilter
+from statistics import mean
+from math import isnan
 
 from courses.forms import CreateCourseForm, CreateGroupForm, CreateEventForm, CreateTaskForm
 from courses.forms import SignUpStudentForm, SignUpTeacherForm, RegisterTaskPointsForm, PickStudentForm, FileUploadForm
@@ -104,11 +106,17 @@ def create_group(request, course_id):
 def group(request, group_id):
     group = Group.objects.get(id=group_id)
     students = [course_participation.student for course_participation in group.courseparticipation_set.all()]
-    members_with_grades = [(student, student.calculate_current_final(group_id)) for student in students]
+    members_with_grades = [(student, student.get_final_percentage(group_id)) for student in students]
+    passing_grades = []
+    for grade in (student.calculate_current_final(group_id) for student in students):
+        if not isinstance(grade, str):
+            passing_grades.append(grade)
+    mean_grade = f'{int(round(mean(passing_grades)))}%' if len(passing_grades) > 0 else '-'
+    passing_students = sum(0 if isinstance(student.calculate_current_final(group_id=group_id), str) or student.calculate_current_final(group_id) < 0.5 else 1 for student in students)
     return render(
         request,
         'courses/group.html',
-        {'group': group, 'file_upload_form': FileUploadForm(), 'members': members_with_grades}
+        {'group': group, 'file_upload_form': FileUploadForm(), 'members': members_with_grades, 'mean_grade': mean_grade, 'passing_students': passing_students }
     )
 
 
